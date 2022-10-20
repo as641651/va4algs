@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../d3"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "plots"
+	}
+}

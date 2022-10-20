@@ -1,0 +1,16 @@
+{
+    "local_problem_dir": "linnea_expressions/matrix-chain-4/",
+    "flask_port": 5003,
+    "default_operand_size": [
+        "75",
+        "75",
+        "6",
+        "75",
+        "75"
+    ],
+    "language": "linnea",
+    "m_server": "login18-1.hpc.itc.rwth-aachen.de",
+    "m_uname": "as641651",
+    "m_problem_dir": "~/PhD/va4algs-exps/matrix-chain-4/",
+    "m_init_script": "~/.analyzer"
+}
