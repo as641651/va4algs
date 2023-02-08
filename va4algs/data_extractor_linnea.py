@@ -150,7 +150,16 @@ class DataExtractorLinnea:
             activity_key = 'concept:name'
             vc = VariantsCompare(xes_log,best_algs,worst_algs,activity_key=activity_key)
             dn, de = vc.get_diff_data()
-            ext = et.drop_duplicates(subset=['concept:name'])[['concept:name', 'concept:flops']]
+
+            ct = ml.filter_table(dc.get_case_table())
+            min_flop = ct['case:flops'].min()
+            ct['case:rel-flops'] = ct.apply(lambda row: (row['case:flops'] - min_flop) / min_flop, axis=1)
+            et = et.merge(ct, on='case:concept:name')
+            et['kernel'] = et.apply(lambda x: x['concept:name'].split('_')[0], axis=1)
+            ext = et[['kernel', 'concept:flops', 'case:rel-flops']]
+            ext = ext.drop_duplicates().reset_index(drop=True)
+
+            
             data_nodes.append(dn)
             data_edges.append(de)
             data_ext.append(ext)
