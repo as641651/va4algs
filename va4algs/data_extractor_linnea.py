@@ -150,6 +150,8 @@ class DataExtractorLinnea:
             activity_key = 'concept:name'
             vc = VariantsCompare(xes_log,best_algs,worst_algs,activity_key=activity_key)
             dn, de = vc.get_diff_data()
+            dn['operands'] = op_str
+            de['operands'] = op_str
 
             ct = ml.filter_table(dc.get_case_table())
             min_flop = ct['case:flops'].min()
