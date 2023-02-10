@@ -18,6 +18,7 @@ class DataExtractorLinnea:
         self.bRankReliable = True
         self.q_max = 75
         self.q_min = 25
+        self.cut_off = 0
         
         self.data_vcs = {}
         self.data_kernels = None
@@ -26,6 +27,7 @@ class DataExtractorLinnea:
         self.data_worst_kseq = None
         self.data_ext = None
         self.data_ranks = {}
+        
         
     def add_operands(self, ops:List, bSync=True):
         self.om.add_operands(ops)
@@ -104,13 +106,61 @@ class DataExtractorLinnea:
         return rv.rank_variants_reliable()[0].iloc[:,:2]
     
     
-    def visualize_box_plots(self, op_str, scale=0.8, tick_size=16):
+    def visualize_box_plots(self, op_str, algs = None, scale=0.8, tick_size=16):
         ml = self.mls[op_str]
-        mv = MeasurementsVisualizer(ml.get_alg_measurements(), ml.h0)
+        if not algs:
+            algs = ml.h0
+        mv = MeasurementsVisualizer(ml.get_alg_measurements(), algs)
         fig = mv.show_measurements_boxplots(scale=scale,tick_size=tick_size)
         return fig
+
+    def get_meta_table(self, op_str):
+        et = self.mls[op_str].data_collector.get_meta_table()
+        et = self.mls[op_str].filter_table(et)
+        et['concept:name'] = et['concept:name'].apply(lambda row: self._clean_concept(row))
+        return et
+
+    def get_algs_with_kernel(self, op_str, kernel):
+        et = self.get_meta_table(op_str)
+        return list(set(et[et.apply(lambda row: kernel in row['concept:name'].split('_'), axis=1)]['case:concept:name'].to_list()))
+
+    def get_algs_with_relation(self, op_str, kernelA, kernelB):
+        et = self.get_meta_table(op_str)
+        et['n2'] = et['case:concept:name'].shift(1)
+        et['kA'] = et['concept:name'].shift(1)
+        xx = et[et.apply(lambda row: row['case:concept:name'] == row['n2'], axis=1)]
+        xx = xx[xx.apply(lambda row: row['kA'].split('_')[0] == kernelA and row['concept:name'].split('_')[0] == kernelB, axis=1)]
+        return list(set(xx['case:concept:name'].to_list()))
+
+    def get_algs_with_relation_flops(self, op_str, kernelA, ineqA, flopsA, kernelB, ineqB,  flopsB):
+        et = self.get_meta_table(op_str)
+        et['n2'] = et['case:concept:name'].shift(1)
+        et['fA'] = et['concept:flops'].shift(1)
+        et['kA'] = et['concept:name'].shift(1)
+        xx = et[et.apply(lambda row: row['case:concept:name'] == row['n2'], axis=1)]
+        xx = xx[xx.apply(lambda row: row['kA'].split('_')[0] == kernelA and row['concept:name'].split('_')[0] == kernelB, axis=1)]
+
+        if ineqA == "<" and ineqB == "<":
+            xx = xx[xx.apply(lambda row: int(row['fA']) < flopsA*10**6 and int(row['concept:flops']) < flopsB*10**6, axis=1 )] 
+        elif ineqA == ">" and ineqB == ">":
+            xx = xx[xx.apply(lambda row: int(row['fA']) > flopsA*10**6 and int(row['concept:flops']) > flopsB*10**6, axis=1 )]
+        elif ineqA == "<" and ineqB == ">":
+            xx = xx[xx.apply(lambda row: int(row['fA']) < flopsA*10**6 and int(row['concept:flops']) > flopsB*10**6, axis=1 )]
+        elif ineqA == ">" and ineqB == "<":
+            xx = xx[xx.apply(lambda row: int(row['fA']) > flopsA*10**6 and int(row['concept:flops']) < flopsB*10**6, axis=1 )]
+
+        return list(set(xx['case:concept:name'].to_list()))
+         
+
+    def get_best_algs(self, op_str):
+        if not self.data_ranks:
+            print("First run prepare_data_for_analysis")
+            return -1
+
+        ranks = self.data_ranks[op_str]
+        return ranks[ranks.iloc[:,1]<=self.cut_off]['case:concept:name'].tolist()
     
-    def prepare_data_for_analysis(self, cutoff=0, clear=False):
+    def prepare_data_for_analysis(self, clear=False):
         #vc = {}
         data_nodes = []
         data_edges = []
@@ -132,8 +182,8 @@ class DataExtractorLinnea:
                 ranks = self._rank_variants_reliable(ml.get_alg_measurements(), ml.h0)
             else:
                 ranks = self._rank_variants(ml.get_alg_measurements(), ml.h0)
-            best_algs = ranks[ranks.iloc[:,1]<=cutoff]['case:concept:name'].tolist()
-            worst_algs = ranks[ranks.iloc[:,1]>cutoff]['case:concept:name'].tolist()
+            best_algs = ranks[ranks.iloc[:,1]<=self.cut_off]['case:concept:name'].tolist()
+            worst_algs = ranks[ranks.iloc[:,1]>self.cut_off]['case:concept:name'].tolist()
 
             dc = ml.data_collector
             et = ml.filter_table(dc.get_meta_table())
