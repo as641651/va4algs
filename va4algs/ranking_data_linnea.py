@@ -1,3 +1,4 @@
+from concurrent.futures import thread
 import os
 import pandas as pd
 import pickle
@@ -56,19 +57,28 @@ class RankingDataLinnea:
     def rank3way(self):
                 
         for op_str, ml in self.dml.mls[self.thread_str].items():
-            
+            print(op_str)
             #collect data
             ml.case_durations_manager.clear_case_durations()
+            if not op_str in self.dml.measurements_data[self.thread_str]:
+                continue
             for i in self.dml.measurements_data[self.thread_str][op_str]:
                 ml.collect_measurements(i)
                 
-            ranks,cutoffs,h0_ = self.rm.get_ranks(ml.get_alg_measurements())
             dc = ml.data_collector
             ct = ml.filter_table(dc.get_case_table())
             min_flop = ct['case:flops'].min()
             ct['case:rel-flops'] = ct.apply(lambda row: (row['case:flops'] - min_flop) / min_flop, axis=1)
-            
-            
+
+            am = ml.get_alg_measurements()
+
+            if not len(am)==len(ct):
+                print("Op strinig {} has a Julia bug".format(op_str))
+                continue
+
+            ranks,cutoffs,h0_ = self.rm.get_ranks(am)
+
+                 
             ranks = ranks.merge(ct, on='case:concept:name')
             self.data_ranks[op_str] = ranks
             self.data_h0[op_str] = h0_
