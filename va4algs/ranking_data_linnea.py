@@ -51,12 +51,19 @@ class RankingDataLinnea:
                 ml.filter_on_flops(rel_flops)
                  
         
-        self.obj_path = os.path.join(dml.lc.local_dir,'ranking-data','rdl_{}_{}.pkl'.format(thread_str,rel_flops))
+        self.obj_path = os.path.join(dml.lc.local_dir,'ranking-data','rdl_{}_{}_{}.pkl'.format(thread_str,rel_flops,self.rm.name))
         
         
-    def rank3way(self):
+    def rank3way(self,update=False):
+
+        ranked = []
+        if update:
+            if os.path.exists(self.obj_path):
+                self.load()
+                ranked = self.data_anomalies['op_str'].tolist()
                 
         for op_str, ml in self.dml.mls[self.thread_str].items():
+
             print(op_str)
             #collect data
             ml.case_durations_manager.clear_case_durations()
@@ -64,6 +71,9 @@ class RankingDataLinnea:
                 continue
             for i in self.dml.measurements_data[self.thread_str][op_str]:
                 ml.collect_measurements(i)
+
+            if op_str in ranked:
+                continue
                 
             dc = ml.data_collector
             ct = ml.filter_table(dc.get_case_table())
@@ -141,7 +151,7 @@ class RankingDataLinnea:
                 
                 time_inc = m_anomaly - m_best
                 rel_inc = time_inc/float(m_best)
-                adj_risk = risk*rel_inc
+                adj_risk = max(0.0,risk*rel_inc)
                 
                 data.append(time_inc)
                 data.append(rel_inc)
