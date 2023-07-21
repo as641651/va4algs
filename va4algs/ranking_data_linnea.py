@@ -1,4 +1,4 @@
-from concurrent.futures import thread
+
 import os
 import pandas as pd
 import pickle
@@ -18,23 +18,23 @@ class RankingDataLinnea:
         self.rm = rm
         self.thread_str = thread_str
         
-        self.data_vcs_flops = {}
-        #self.data_vcs_nflops = {}
-        #self.data_best_kseq = None
-        #self.data_worst_kseq = None
+        # self.data_vcs_flops = {}
+        # #self.data_vcs_nflops = {}
+        # #self.data_best_kseq = None
+        # #self.data_worst_kseq = None
         
-        self.bfull_graphs = False
-        self.data_kernels = None
-        self.data_relations = None
-        self.data_ext = None
+        # self.bfull_graphs = False
+        # self.data_kernels = None
+        # self.data_relations = None
+        # self.data_ext = None
         
-        self.v_data_kernels = None
-        self.v_data_relations = None
-        self.v_data_ext = None
+        # self.v_data_kernels = None
+        # self.v_data_relations = None
+        # self.v_data_ext = None
         
-        self.f_data_kernels = None
-        self.f_data_relations = None
-        self.f_data_ext = None
+        # self.f_data_kernels = None
+        # self.f_data_relations = None
+        # self.f_data_ext = None
         
         self.data_cutoffs = {}
         self.data_ranks = {}
@@ -101,17 +101,17 @@ class RankingDataLinnea:
     def _determine_anomalies(self):
         anomalies = []
         
-        d_nodes = []
-        d_edges = []
-        d_ext = []
+        # d_nodes = []
+        # d_edges = []
+        # d_ext = []
         
-        v_nodes = []
-        v_edges = []
-        v_ext = []
+        # v_nodes = []
+        # v_edges = []
+        # v_ext = []
         
-        f_nodes = []
-        f_edges = []
-        f_ext = []
+        # f_nodes = []
+        # f_edges = []
+        # f_ext = []
         
         for op_str, ranks in self.data_ranks.items():
             num_algs = len(ranks)
@@ -165,32 +165,32 @@ class RankingDataLinnea:
             data.append(rel_flops_cutoff)
             anomalies.append(data) 
             
-            if self.bfull_graphs:
-                worst_algs = set(ranks[ranks.iloc[:,1]>self.data_cutoffs[op_str][1]]['case:concept:name'])
-                dn,de,ext = self.prepare_dfg_data(op_str,list(best_algs),list(worst_algs))
+            # if self.bfull_graphs:
+            #     worst_algs = set(ranks[ranks.iloc[:,1]>self.data_cutoffs[op_str][1]]['case:concept:name'])
+            #     dn,de,ext = self.prepare_dfg_data(op_str,list(best_algs),list(worst_algs))
                 
-                d_nodes.append(dn)
-                d_edges.append(de)
-                d_ext.append(ext)
+            #     d_nodes.append(dn)
+            #     d_edges.append(de)
+            #     d_ext.append(ext)
                 
             
-            if adj_risk > 0.0 and rel_flops_cutoff == 0:
-                best_v = best_algs.intersection(rel0_algs)
-                worst_v = anomaly_algs
+            # if adj_risk > 0.0 and rel_flops_cutoff == 0:
+            #     best_v = best_algs.intersection(rel0_algs)
+            #     worst_v = anomaly_algs
                 
-                dn,de,ext = self.prepare_dfg_data(op_str,list(best_v),list(worst_v))
+            #     dn,de,ext = self.prepare_dfg_data(op_str,list(best_v),list(worst_v))
                 
-                v_nodes.append(dn)
-                v_edges.append(de)
-                v_ext.append(ext)
+            #     v_nodes.append(dn)
+            #     v_edges.append(de)
+            #     v_ext.append(ext)
                 
-            elif adj_risk > 0.0 and rel_flops_cutoff > 0.0:
-                worst_v = set(ranks[ranks['case:rel-flops']<=rel_flops_cutoff]['case:concept:name']) - best_algs
-                dn,de,ext = self.prepare_dfg_data(op_str,list(best_algs),list(worst_v))
+            # elif adj_risk > 0.0 and rel_flops_cutoff > 0.0:
+            #     worst_v = set(ranks[ranks['case:rel-flops']<=rel_flops_cutoff]['case:concept:name']) - best_algs
+            #     dn,de,ext = self.prepare_dfg_data(op_str,list(best_algs),list(worst_v))
                 
-                f_nodes.append(dn)
-                f_edges.append(de)
-                f_ext.append(ext)
+            #     f_nodes.append(dn)
+            #     f_edges.append(de)
+            #     f_ext.append(ext)
                                           
             
         df = pd.DataFrame(anomalies,columns=['op_str', 'num_algs',
@@ -205,26 +205,26 @@ class RankingDataLinnea:
         
         self.data_anomalies = df
         
-        if d_nodes:
-            self.data_kernels = pd.concat(d_nodes).reset_index(drop=True)
-            self.data_relations = pd.concat(d_edges).reset_index(drop=True)
-            self.data_ext = pd.concat(d_ext).reset_index(drop=True)
-            self.data_kernels, self.data_relations = self.prepare_kernel_relations_data(self.data_kernels,
-                                                                                           self.data_relations)
+        # if d_nodes:
+        #     self.data_kernels = pd.concat(d_nodes).reset_index(drop=True)
+        #     self.data_relations = pd.concat(d_edges).reset_index(drop=True)
+        #     self.data_ext = pd.concat(d_ext).reset_index(drop=True)
+        #     self.data_kernels, self.data_relations = self.prepare_kernel_relations_data(self.data_kernels,
+        #                                                                                    self.data_relations)
                 
-        if v_nodes:
-            self.v_data_kernels = pd.concat(v_nodes).reset_index(drop=True)
-            self.v_data_relations = pd.concat(v_edges).reset_index(drop=True)
-            self.v_data_ext = pd.concat(v_ext).reset_index(drop=True)
-            self.v_data_kernels, self.v_data_relations = self.prepare_kernel_relations_data(self.v_data_kernels,
-                                                                                            self.v_data_relations)
+        # if v_nodes:
+        #     self.v_data_kernels = pd.concat(v_nodes).reset_index(drop=True)
+        #     self.v_data_relations = pd.concat(v_edges).reset_index(drop=True)
+        #     self.v_data_ext = pd.concat(v_ext).reset_index(drop=True)
+        #     self.v_data_kernels, self.v_data_relations = self.prepare_kernel_relations_data(self.v_data_kernels,
+        #                                                                                     self.v_data_relations)
             
-        if f_nodes:
-            self.f_data_kernels = pd.concat(f_nodes).reset_index(drop=True)
-            self.f_data_relations = pd.concat(f_edges).reset_index(drop=True)
-            self.f_data_ext = pd.concat(f_ext).reset_index(drop=True)
-            self.f_data_kernels, self.f_data_relations = self.prepare_kernel_relations_data(self.f_data_kernels,
-                                                                                            self.f_data_relations)
+        # if f_nodes:
+        #     self.f_data_kernels = pd.concat(f_nodes).reset_index(drop=True)
+        #     self.f_data_relations = pd.concat(f_edges).reset_index(drop=True)
+        #     self.f_data_ext = pd.concat(f_ext).reset_index(drop=True)
+        #     self.f_data_kernels, self.f_data_relations = self.prepare_kernel_relations_data(self.f_data_kernels,
+        #                                                                                     self.f_data_relations)
         
     
     def get_adjusted_risk(self,op_str):
@@ -241,65 +241,65 @@ class RankingDataLinnea:
         xy = self.data_anomalies
         return xy.loc[xy['op_str']==op_str,'rel-flops-cutoff'].values[0]
     
-    def prepare_dfg_data(self,op_str,best_a,worst_a):
+    # def prepare_dfg_data(self,op_str,best_a,worst_a):
         
-        ml = self.dml.mls[self.thread_str][op_str]
-        dc = ml.data_collector
+    #     ml = self.dml.mls[self.thread_str][op_str]
+    #     dc = ml.data_collector
         
-        et = ml.filter_table(dc.get_meta_table())
-        et['concept:name'] = et['concept:name'].apply(lambda row: self._clean_concept_eq(row))
-        et['concept:name'] = et['concept:name'].apply(lambda row: self._clean_concept_remove_LAPACK(row))
+    #     et = ml.filter_table(dc.get_meta_table())
+    #     et['concept:name'] = et['concept:name'].apply(lambda row: self._clean_concept_eq(row))
+    #     et['concept:name'] = et['concept:name'].apply(lambda row: self._clean_concept_remove_LAPACK(row))
         
-        xes_log = log_converter.apply(et)
+    #     xes_log = log_converter.apply(et)
 
-        activity_key = 'concept:name'
-        vc = VariantsCompare(xes_log,best_a,worst_a,activity_key=activity_key)
-        dn, de = vc.get_diff_data()
-        dn['operands'] = op_str
-        de['operands'] = op_str
+    #     activity_key = 'concept:name'
+    #     vc = VariantsCompare(xes_log,best_a,worst_a,activity_key=activity_key)
+    #     dn, de = vc.get_diff_data()
+    #     dn['operands'] = op_str
+    #     de['operands'] = op_str
 
-        et = et.merge(self.data_ranks[op_str], on='case:concept:name')
-        et['kernel'] = et.apply(lambda x: x['concept:name'].split('_')[0], axis=1)
-        ext = et[['kernel', 'concept:flops', 'case:rel-flops']]
-        ext = ext.drop_duplicates().reset_index(drop=True)
+    #     et = et.merge(self.data_ranks[op_str], on='case:concept:name')
+    #     et['kernel'] = et.apply(lambda x: x['concept:name'].split('_')[0], axis=1)
+    #     ext = et[['kernel', 'concept:flops', 'case:rel-flops']]
+    #     ext = ext.drop_duplicates().reset_index(drop=True)
         
-        self.data_vcs_flops[op_str] = vc
+    #     self.data_vcs_flops[op_str] = vc
         
-        return dn,de,ext
+    #     return dn,de,ext
                      
     
-    def prepare_kernel_relations_data(self,data_kernels,data_relations):
-        def get_flops(str_):
-            if not '@@' in str_:
-                return float(str_.split('_')[1])
-            return 0
-        data_kernels['flops'] = data_kernels.apply(lambda x: get_flops(x['node']), axis=1)
-        data_kernels['kernel'] = data_kernels.apply(lambda x: x['node'].split('_')[0], axis=1)
-        data_relations['flopsA'] = data_relations.apply(lambda x: get_flops(x['nodeA']), axis=1)
-        data_relations['kernelA'] = data_relations.apply(lambda x: x['nodeA'].split('_')[0], axis=1)
-        data_relations['flopsB'] = data_relations.apply(lambda x: get_flops(x['nodeB']), axis=1)
-        data_relations['kernelB'] = data_relations.apply(lambda x: x['nodeB'].split('_')[0], axis=1)
+    # def prepare_kernel_relations_data(self,data_kernels,data_relations):
+    #     def get_flops(str_):
+    #         if not '@@' in str_:
+    #             return float(str_.split('_')[1])
+    #         return 0
+    #     data_kernels['flops'] = data_kernels.apply(lambda x: get_flops(x['node']), axis=1)
+    #     data_kernels['kernel'] = data_kernels.apply(lambda x: x['node'].split('_')[0], axis=1)
+    #     data_relations['flopsA'] = data_relations.apply(lambda x: get_flops(x['nodeA']), axis=1)
+    #     data_relations['kernelA'] = data_relations.apply(lambda x: x['nodeA'].split('_')[0], axis=1)
+    #     data_relations['flopsB'] = data_relations.apply(lambda x: get_flops(x['nodeB']), axis=1)
+    #     data_relations['kernelB'] = data_relations.apply(lambda x: x['nodeB'].split('_')[0], axis=1)
         
-        return data_kernels, data_relations
+    #     return data_kernels, data_relations
     
     
-    def _clean_concept_eq(self, name):
-        splits = name.split('=')
-        if len(splits) > 1:
-            return splits[-1].strip()
-        return splits[0].strip()
+    # def _clean_concept_eq(self, name):
+    #     splits = name.split('=')
+    #     if len(splits) > 1:
+    #         return splits[-1].strip()
+    #     return splits[0].strip()
     
-    def _clean_concept_remove_cost(self,name):
-        splits = name.split('_')
-        if len(splits) > 1:
-            return splits[0].strip()
-        return splits[0].strip()
+    # def _clean_concept_remove_cost(self,name):
+    #     splits = name.split('_')
+    #     if len(splits) > 1:
+    #         return splits[0].strip()
+    #     return splits[0].strip()
 
-    def _clean_concept_remove_LAPACK(self,name):
-        splits = name.split('LAPACK.')
-        if len(splits) > 1:
-            return splits[-1].strip()
-        return splits[0].strip()
+    # def _clean_concept_remove_LAPACK(self,name):
+    #     splits = name.split('LAPACK.')
+    #     if len(splits) > 1:
+    #         return splits[-1].strip()
+    #     return splits[0].strip()
     
     def visualize_box_plots(self, op_str, scale=0.8, tick_size=16):
         ml = self.dml.mls[self.thread_str][op_str]
@@ -314,19 +314,19 @@ class RankingDataLinnea:
     
     def __getstate__(self):
         state = {
-            'kernels':self.data_kernels,
-            'relations':self.data_relations,
-            'ext':self.data_ext,
-            'v_kernels':self.v_data_kernels,
-            'v_relations':self.v_data_relations,
-            'v_ext':self.v_data_ext,    
-            'f_kernels':self.f_data_kernels,
-            'f_relations':self.f_data_relations,
-            'f_ext':self.f_data_ext,
+            # 'kernels':self.data_kernels,
+            # 'relations':self.data_relations,
+            # 'ext':self.data_ext,
+            # 'v_kernels':self.v_data_kernels,
+            # 'v_relations':self.v_data_relations,
+            # 'v_ext':self.v_data_ext,    
+            # 'f_kernels':self.f_data_kernels,
+            # 'f_relations':self.f_data_relations,
+            # 'f_ext':self.f_data_ext,
             'ranks':self.data_ranks,
             'h0':self.data_h0,
             'cutoffs':self.data_cutoffs,
-            'vcs_f':self.data_vcs_flops,
+            # 'vcs_f':self.data_vcs_flops,
             'anomalies':self.data_anomalies,
             'p_anomalies':self.percent_anomalies,
             'avg_risk':self.avg_risk,
@@ -335,21 +335,21 @@ class RankingDataLinnea:
         return state
     
     def __setstate__(self,state):
-        self.data_kernels = state['kernels']
-        self.data_relations = state['relations']
-        self.data_ext = state['ext']
+        # self.data_kernels = state['kernels']
+        # self.data_relations = state['relations']
+        # self.data_ext = state['ext']
         
-        self.v_data_kernels = state['v_kernels']
-        self.v_data_relations = state['v_relations']
-        self.v_data_ext = state['v_ext']
+        # self.v_data_kernels = state['v_kernels']
+        # self.v_data_relations = state['v_relations']
+        # self.v_data_ext = state['v_ext']
         
-        self.f_data_kernels = state['f_kernels']
-        self.f_data_relations = state['f_relations']
-        self.f_data_ext = state['f_ext']
+        # self.f_data_kernels = state['f_kernels']
+        # self.f_data_relations = state['f_relations']
+        # self.f_data_ext = state['f_ext']
         
         self.data_ranks = state['ranks']
         self.data_h0 = state['h0']
-        self.data_vcs_flops = state['vcs_f']
+        # self.data_vcs_flops = state['vcs_f']
         self.data_cutoffs = state['cutoffs']
         self.data_anomalies = state['anomalies']
         self.percent_anomalies = state['p_anomalies']
@@ -387,3 +387,6 @@ class RankingDataLinnea:
                     ml.collect_measurements(i)
         
     
+    def filter_interesting_operands(self,adj_risk_thresh):
+        df = self.data_anomalies
+        return df[df['adj_risk']>adj_risk_thresh].sort_values(['rel-flops-cutoff','adj_risk'], ascending=[False,False])

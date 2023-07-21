@@ -17,7 +17,8 @@ class RankingModel:
     
     def methodology3(self,alg_measurements,alg_list):
         rv_ = RankVariantsDFGTr(alg_measurements, alg_list)
-        ranks_ =  rv_.rank_variants_reliable()[0].iloc[:,:2]
+        #ranks_ =  rv_.rank_variants_reliable()[0].iloc[:,:2]
+        ranks_ = rv_.rank_variants()
         h0_ = rv_.graph.get_separable_arrangement()
         rv = RankVariantsSort2(alg_measurements,h0_)
         ranks = rv.rank_variants()

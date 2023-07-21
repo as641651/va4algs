@@ -6,3 +6,6 @@ from .ranking_model import RankingModel
 from .ranking_data_linnea import RankingDataLinnea
 from .operands_sampler_neighbour import OperandsSamplerNeighbour
 from .smart_measurements import SmartMeasurementManager 
+from .vc_data_linnea import VCDataLinnea
+from .rule_discovery import RulesDiscovery
+from .rule_discovery import AnalysisType
