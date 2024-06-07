@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'Variants Analysis for Algorithms'
+project = 'va4algs'
 copyright = '2024, Aravind Sankaran'
 author = 'Aravind Sankaran'
 release = '0.1'
